@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CSV Runner Dashboard
 
-## Getting Started
+A Next.js + shadcn/ui dashboard where users upload a CSV with columns: date, person, miles run. The app validates input, computes metrics (average, min, max), and renders overall and per‑person charts.
 
-First, run the development server:
+## Assumptions
+- No backend or database required; parsing and visualizations are client‑side.
+- CSV header names are case/spacing tolerant. Supported: `date`, `person`, and `miles run` (also accepts `miles`, `miles_run`, `miles-run`).
+- Dates can be ISO (YYYY‑MM‑DD) or common formats (MM/DD/YYYY, DD/MM/YYYY, etc.).
+
+## Prerequisites
+- Node.js 18+ and npm
+- No secrets are required. See `.env.example`.
+
+## Setup
+1) Install dependencies
+
+```bash
+npm install
+```
+
+2) Environment
+- Copy `.env.example` to `.env` if you need overrides (not required by default).
+
+3) Seed data
+- Not applicable. Use the included sample file `public/sample.csv`.
+
+## Run & verify
+1) Start dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2) Open the app
+- Visit http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3) Validate acceptance items
+- Sample CSV: Click "Download sample.csv" or open `/sample.csv`.
+- Overall and per-person views: Use the tabs (Overall, Per Person). In Per Person, choose a person from the select.
+- Metrics: Average/Min/Max are shown in cards for Overall and for the selected person.
+- Error handling: Upload a bad CSV (e.g., missing `miles run` or non-numeric miles). Errors appear in a destructive alert listing header and row issues with line numbers.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features & limitations
+- Features
+  - CSV parsing with PapaParse and validation with Zod.
+  - Flexible headers and multiple date formats.
+  - Overall metrics + line chart of miles over time (aggregated by date).
+  - Per-person selection with metrics, chart, and records table.
+  - Accessible form controls and focusable components from shadcn/ui.
+- Limitations
+  - Very large CSVs parse on the client; consider streaming/server processing for huge files.
+  - Only a single file upload per session (no merge across multiple files).
 
-## Learn More
+## Notes on architecture
+- Stack: Next.js (App Router), TypeScript, Tailwind v4, shadcn/ui, Recharts, PapaParse, Zod.
+- Key files
+  - `src/lib/csv.ts` — parsing and validation.
+  - `src/lib/stats.ts` — metrics and aggregations.
+  - `src/components/csv-uploader.tsx` — file input + error display.
+  - `src/components/run-line-chart.tsx` — reusable line chart.
+  - `src/components/metrics-row.tsx` — metrics cards.
+  - `src/components/runs-table.tsx` — data table.
+  - `src/app/page.tsx` — dashboard page (client component for state).
+- State: kept in the page component (client-side); derived data memoized.
 
-To learn more about Next.js, take a look at the following resources:
+## Accessibility & UI
+- Labels associated with inputs via `Label` or native `label`.
+- Keyboard-focusable inputs and tabs; semantic elements from shadcn/ui.
+- Color contrast based on Tailwind v4 theme tokens; charts include grid and tooltip for readability.
+- Spacing and typography via Tailwind utility classes; responsive layout up to 5xl.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Acceptance checklist (for reviewers)
+- [x] Sample CSV + instructions
+- [x] Overall and per-person charts/views
+- [x] Metrics computed correctly (average, min, max)
+- [x] Error handling for invalid CSV (header + row-level)
